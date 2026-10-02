@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "multi-agent-workflow-server": {
+      "command": "uv",
+      "args": ["run", "python", "server.py", "--mcp"],
+      "description": "Multi-Agent Workflow MCP Server providing Markdown, Database, and Documentation agents as MCP tools."
+    },
+    "filesystem-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "output/markdown",
+        "docs"
+      ],
+      "description": "Filesystem MCP Server for accessing markdown outputs and documentation."
+    }
+  }
+}

@@ -1,0 +1,23 @@
+[project]
+name = "my-mcp-server"
+version = "0.1.0"
+description = "Multi-Agent Workflow System with Markdown, Database, and Documentation Agents"
+readme = "README.md"
+authors = [
+    { name = "Mohan Prakash", email = "mohankl4536@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "mcp[cli]>=2.2.0",
+    "starlette>=0.30.0",
+    "uvicorn>=0.20.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.scripts]
+my-mcp-server = "server:main"
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"

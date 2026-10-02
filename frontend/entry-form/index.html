@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Agent Workflow Portal</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon">🤖</div>
+        <div>
+          <h1>Multi-Agent Workflow System</h1>
+          <p class="subtitle">Autonomous 3-Agent Pipeline: Markdown · Database · Documentation</p>
+        </div>
+      </div>
+
+      <!-- User Mode Switcher: Server vs Host -->
+      <div class="mode-switcher-container">
+        <div class="mode-pill-toggle" role="group" aria-label="Mode Switcher">
+          <button type="button" class="mode-toggle-btn active" id="btn-mode-server" data-mode="server">
+            <span class="mode-dot server-dot"></span>
+            <span class="mode-text">🟢 MCP Server Mode</span>
+          </button>
+          <button type="button" class="mode-toggle-btn" id="btn-mode-host" data-mode="host">
+            <span class="mode-dot host-dot"></span>
+            <span class="mode-text">🟣 MCP Host Mode</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-badges">
+        <span class="badge mcp-badge" id="mcp-status-badge">⚡ MCP Active</span>
+        <span class="badge db-badge" id="db-status-badge">🗄️ SQLite Ready</span>
+        <a href="https://airtable.com/app6vfsWylAHZIYwD/tblf6e5PZVACQy2ZC" target="_blank" rel="noopener noreferrer" style="text-decoration: none;">
+          <span class="badge airtable-badge" id="airtable-status-badge" title="Open your live Airtable Base">☁️ Airtable Cloud ↗</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Main Content Grid (MCP Server Mode) -->
+    <main class="content-grid" id="server-workspace">
+      <!-- Left Column: Entry Form -->
+      <section class="card form-card">
+        <div class="card-header">
+          <div class="header-title">
+            <span class="card-icon" id="form-icon">📝</span>
+            <div>
+              <h2 id="form-heading">Project Entry Form</h2>
+              <p id="form-subheading">Submit task specifications to trigger the 3-agent pipeline</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-prefill">
+              ✨ Pre-fill Demo Data
+            </button>
+          </div>
+        </div>
+
+        <!-- Edit Mode Banner (Hidden by default) -->
+        <div class="edit-mode-banner" id="edit-mode-banner" style="display: none;">
+          <div class="edit-mode-info">
+            <span class="badge badge-warning">✏️ EDIT MODE</span>
+            <span class="edit-mode-title" id="edit-mode-text">Editing Project #1</span>
+          </div>
+          <button type="button" class="btn btn-outline btn-xs" id="btn-cancel-edit">
+            ✕ Cancel Edit (New Project)
+          </button>
+        </div>
+
+        <form id="entry-form" novalidate>
+          <!-- Project Name Field -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="project_name">
+                Project / Task Name <span class="required">*</span>
+              </label>
+              <span class="char-counter" id="count-project_name">0 / 120</span>
+            </div>
+            <input 
+              type="text" 
+              id="project_name" 
+              name="project_name" 
+              class="form-control" 
+              placeholder="e.g., E-Commerce Checkout Service" 
+              required 
+              minlength="2" 
+              maxlength="120"
+            />
+            <div class="error-feedback" id="err-project_name"></div>
+          </div>
+
+          <!-- Description Field -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="description">
+                Project Description <span class="required">*</span>
+              </label>
+              <span class="char-counter" id="count-description">0 / 5000</span>
+            </div>
+            <textarea 
+              id="description" 
+              name="description" 
+              class="form-control" 
+              rows="4" 
+              placeholder="Provide a comprehensive summary of the project goals, user personas, and scope..." 
+              required 
+              minlength="5"
+              maxlength="5000"
+            ></textarea>
+            <div class="error-feedback" id="err-description"></div>
+          </div>
+
+          <!-- Requirements Field -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="requirements">
+                Requirements & Specifications <span class="required">*</span>
+                <span class="hint">(Separate each requirement with a new line)</span>
+              </label>
+              <span class="char-counter" id="count-requirements">0 / 5000</span>
+            </div>
+            <textarea 
+              id="requirements" 
+              name="requirements" 
+              class="form-control" 
+              rows="5" 
+              placeholder="- User authentication via JWT&#10;- Stripe payment webhook integration&#10;- Order confirmation emails via SendGrid&#10;- 99.9% uptime SLA" 
+              required
+              minlength="5"
+              maxlength="5000"
+            ></textarea>
+            <div class="error-feedback" id="err-requirements"></div>
+          </div>
+
+          <!-- Additional Information Field -->
+          <div class="form-group">
+            <div class="label-row">
+              <label for="additional_info">
+                Additional Information & Constraints
+                <span class="hint">(Optional)</span>
+              </label>
+              <span class="char-counter" id="count-additional_info">0 / 3000</span>
+            </div>
+            <textarea 
+              id="additional_info" 
+              name="additional_info" 
+              class="form-control" 
+              rows="3" 
+              maxlength="3000"
+              placeholder="Deployment target: AWS ECS, Python 3.13, PostgreSQL / SQLite compatibility, compliance constraints..."
+            ></textarea>
+            <div class="error-feedback" id="err-additional_info"></div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="reset" class="btn btn-outline" id="btn-reset">Clear</button>
+            <button type="submit" class="btn btn-primary" id="btn-submit">
+              <span class="btn-text" id="btn-submit-text">🚀 Run Multi-Agent Workflow</span>
+              <span class="spinner" id="btn-spinner" style="display: none;"></span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Right Column: Live Pipeline & Results -->
+      <section class="card results-card">
+        <!-- Pipeline Visualizer -->
+        <div class="pipeline-header">
+          <h3>Workflow Orchestration Pipeline</h3>
+          <span class="status-indicator" id="overall-pill">Idle</span>
+        </div>
+
+        <div class="pipeline-stepper" id="stepper">
+          <!-- Step 1: Input Validation -->
+          <div class="step" id="step-validation">
+            <div class="step-icon">1</div>
+            <div class="step-info">
+              <span class="step-title">Input Validation</span>
+              <span class="step-desc" id="status-validation">Awaiting submission</span>
+            </div>
+          </div>
+
+          <!-- Step 2: Agent 1 (Markdown) -->
+          <div class="step" id="step-agent1">
+            <div class="step-icon">2</div>
+            <div class="step-info">
+              <span class="step-title">Agent 1: Markdown Agent</span>
+              <span class="step-desc" id="status-agent1">Waiting</span>
+            </div>
+          </div>
+
+          <!-- Step 3: Agent 2 (Database) -->
+          <div class="step" id="step-agent2">
+            <div class="step-icon">3</div>
+            <div class="step-info">
+              <span class="step-title">Agent 2: Database Agent</span>
+              <span class="step-desc" id="status-agent2">Waiting</span>
+            </div>
+          </div>
+
+          <!-- Step 4: Agent 3 (Documentation) -->
+          <div class="step" id="step-agent3">
+            <div class="step-icon">4</div>
+            <div class="step-info">
+              <span class="step-title">Agent 3: Documentation Agent</span>
+              <span class="step-desc" id="status-agent3">Waiting</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Banner for Results or Errors -->
+        <div class="banner" id="status-banner" style="display: none;"></div>
+
+        <!-- Agent Output Cards -->
+        <div class="agent-cards-container" id="agent-cards" style="display: none;">
+          <!-- Card: Agent 1 -->
+          <div class="agent-result-card" id="card-agent1">
+            <div class="agent-card-top">
+              <span class="agent-card-title">📄 Agent 1: Markdown Output</span>
+              <span class="agent-status-tag" id="tag-agent1">Success</span>
+            </div>
+            <div class="agent-card-content">
+              <p class="summary-text" id="summary-agent1">-</p>
+              <div class="path-box">
+                <span class="label">File Path:</span>
+                <code id="path-agent1">-</code>
+              </div>
+              <div class="card-btn-row">
+                <button type="button" class="btn btn-outline btn-xs" id="btn-view-md">👁️ View Markdown</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Agent 2 -->
+          <div class="agent-result-card" id="card-agent2">
+            <div class="agent-card-top">
+              <span class="agent-card-title">🗄️ Agent 2: Database Status</span>
+              <span class="agent-status-tag" id="tag-agent2">Success</span>
+            </div>
+            <div class="agent-card-content">
+              <p class="summary-text" id="summary-agent2">-</p>
+              <div class="meta-grid">
+                <div><span class="label">Record ID:</span> <code id="id-agent2">#1</code></div>
+                <div><span class="label">Table:</span> <code>projects</code></div>
+                <div><span class="label">Operation:</span> <span id="op-agent2">Inserted</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card: Agent 3 -->
+          <div class="agent-result-card" id="card-agent3">
+            <div class="agent-card-top">
+              <span class="agent-card-title">📚 Agent 3: Documentation Output</span>
+              <span class="agent-status-tag" id="tag-agent3">Success</span>
+            </div>
+            <div class="agent-card-content">
+              <p class="summary-text" id="summary-agent3">-</p>
+              <div class="path-box">
+                <span class="label">Doc File:</span>
+                <code id="path-agent3">-</code>
+              </div>
+              <div class="card-btn-row">
+                <button type="button" class="btn btn-outline btn-xs" id="btn-view-doc">📖 View Documentation</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Projects Section -->
+        <div class="recent-projects-area">
+          <div class="recent-header">
+            <h4>📋 Database Records (Stored Projects)</h4>
+            <div class="recent-actions">
+              <div class="filter-pills" id="status-filters">
+                <button type="button" class="filter-btn active" data-filter="all">All</button>
+                <button type="button" class="filter-btn" data-filter="active">Active</button>
+                <button type="button" class="filter-btn" data-filter="archived">Archived</button>
+              </div>
+              <button type="button" class="btn btn-outline btn-xs" id="btn-refresh-history">🔄 Refresh</button>
+              <button type="button" class="btn btn-outline btn-xs btn-danger-outline" id="btn-clear-airtable" title="Clear all Airtable records, leaving table structure and column labels intact">🗑️ Clear Airtable Data</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table" id="projects-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Project Name</th>
+                  <th>Status</th>
+                  <th>Version</th>
+                  <th>Created</th>
+                  <th>Updated</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="projects-tbody">
+                <tr><td colspan="7" class="text-center">Loading stored records...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- MCP Host Workspace (Displayed when user selects MCP Host Mode) -->
+    <section class="host-workspace-container" id="host-workspace" style="display: none;">
+      <!-- Host Banner & Metrics -->
+      <div class="host-hero-card">
+        <div class="host-hero-content">
+          <div class="host-title-group">
+            <div class="host-badge-pill">🟣 MCP Host Engine Active</div>
+            <h2>Interactive Model Context Protocol (MCP) Host Console</h2>
+            <p>You are operating as an <strong>MCP Host (Client)</strong>. In this mode, the application dynamically discovers MCP tools, inspects their schemas, executes tool requests with standard JSON-RPC framing, and provides an autonomous AI Assistant to orchestrate tools with natural language.</p>
+          </div>
+          <div class="host-stats-grid">
+            <div class="host-stat-box">
+              <span class="stat-num" id="stat-tool-count">11</span>
+              <span class="stat-label">Registered Tools</span>
+            </div>
+            <div class="host-stat-box">
+              <span class="stat-num" id="stat-latency">--</span>
+              <span class="stat-label">Last Tool Latency</span>
+            </div>
+            <div class="host-stat-box">
+              <span class="stat-num">JSON-RPC 2.0</span>
+              <span class="stat-label">Protocol Standard</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Host Navigation Tabs -->
+        <div class="host-nav-tabs">
+          <button type="button" class="host-tab-btn active" data-tab="runner" id="tab-btn-runner">
+            🛠️ Interactive Tool Runner & Catalog
+          </button>
+          <button type="button" class="host-tab-btn" data-tab="assistant" id="tab-btn-assistant">
+            🤖 Host AI Assistant (Natural Language)
+          </button>
+          <button type="button" class="host-tab-btn" data-tab="inspector" id="tab-btn-inspector">
+            📜 JSON-RPC Protocol & Architecture
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab 1: Interactive Tool Runner & Catalog -->
+      <div class="host-tab-content active" id="host-tab-runner">
+        <div class="host-grid">
+          <!-- Tools List Column -->
+          <div class="card host-tools-list-card">
+            <div class="card-header">
+              <div class="header-title">
+                <span class="card-icon">🧰</span>
+                <div>
+                  <h3>Discovered MCP Tools</h3>
+                  <p>Select a tool to inspect schema and execute</p>
+                </div>
+              </div>
+            </div>
+            <div class="tools-search-box">
+              <input type="text" id="host-tool-search" class="form-control form-control-sm" placeholder="🔍 Search tools..." />
+            </div>
+            <div class="tools-list-items" id="host-tools-list">
+              <!-- Dynamically populated -->
+              <div class="loading-state">Loading MCP tools...</div>
+            </div>
+          </div>
+
+          <!-- Tool Execution Console Column -->
+          <div class="card host-execution-card">
+            <div class="card-header">
+              <div class="header-title">
+                <span class="card-icon" id="selected-tool-icon">⚡</span>
+                <div>
+                  <h3 id="selected-tool-name">Select an MCP Tool</h3>
+                  <p id="selected-tool-desc">Choose a tool from the catalog on the left to begin.</p>
+                </div>
+              </div>
+              <div class="header-actions">
+                <span class="badge" id="selected-tool-category" style="display: none;">-</span>
+              </div>
+            </div>
+
+            <div class="tool-runner-body" id="tool-runner-body">
+              <div class="empty-selection-placeholder" id="tool-empty-placeholder">
+                <span class="empty-icon">👈</span>
+                <p>Select any registered MCP tool from the left sidebar to generate dynamic inputs and run it as an MCP Client.</p>
+              </div>
+
+              <form id="host-tool-form" style="display: none;">
+                <div class="tool-form-fields" id="host-form-fields">
+                  <!-- Generated input fields -->
+                </div>
+                <div class="tool-form-actions">
+                  <button type="submit" class="btn btn-primary" id="btn-host-exec">
+                    <span id="btn-host-exec-text">▶️ Execute Tool via MCP Host</span>
+                    <span class="spinner" id="host-exec-spinner" style="display: none;"></span>
+                  </button>
+                </div>
+              </form>
+
+              <!-- Execution Results & Inspector -->
+              <div class="host-results-panel" id="host-results-panel" style="display: none;">
+                <div class="results-header">
+                  <h4>Tool Execution Result</h4>
+                  <div class="results-meta">
+                    <span class="badge badge-success" id="host-res-status">Success</span>
+                    <span class="badge badge-neutral" id="host-res-latency">1.2ms</span>
+                  </div>
+                </div>
+                <div class="results-tabs">
+                  <button type="button" class="res-tab-btn active" data-view="formatted">Formatted Result</button>
+                  <button type="button" class="res-tab-btn" data-view="jsonrpc">JSON-RPC Call & Response</button>
+                </div>
+                <div class="results-display">
+                  <pre class="res-code-box" id="host-res-formatted"></pre>
+                  <pre class="res-code-box" id="host-res-jsonrpc" style="display: none;"></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Host AI Assistant (Natural Language) -->
+      <div class="host-tab-content" id="host-tab-assistant" style="display: none;">
+        <div class="card host-assistant-card">
+          <div class="assistant-chat-header">
+            <div class="chat-header-info">
+              <span class="assistant-avatar">🤖</span>
+              <div>
+                <h3>MCP Host AI Assistant</h3>
+                <p>Choose an LLM Host Brain (Local or Google Gemini) to parse natural language, formulate MCP tool calls, and execute tools.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Host Brain Provider Selector -->
+          <div class="assistant-provider-bar">
+            <div class="provider-selector-group">
+              <label for="host-provider-select">🧠 Host Brain:</label>
+              <select id="host-provider-select" class="form-control form-control-sm">
+                <option value="gemini" selected>✨ Google Gemini (Live LLM Host)</option>
+                <option value="local">⚡ Local Fast Engine (Offline / Zero-Key)</option>
+              </select>
+            </div>
+            <div class="api-key-group" id="api-key-container" style="display: none;">
+              <input type="password" id="host-api-key-input" class="form-control form-control-sm" placeholder="Paste API Key (or leave blank if in .env)..." />
+              <button type="button" class="btn btn-outline btn-xs" id="btn-save-key">Save</button>
+            </div>
+          </div>
+
+          <!-- Quick Prompts Chips -->
+          <div class="chat-quick-chips">
+            <button type="button" class="chip-btn" data-prompt="List all projects in the database">📋 List All Projects</button>
+            <button type="button" class="chip-btn" data-prompt="Show all Airtable records">☁️ Show Airtable Records</button>
+            <button type="button" class="chip-btn" data-prompt="Sync all projects to Airtable">🔄 Sync to Airtable</button>
+            <button type="button" class="chip-btn" data-prompt="Clear Airtable data completely leaving only labels">🗑️ Clear Airtable Data</button>
+            <button type="button" class="chip-btn" data-prompt="What tools are available?">❓ What tools can you run?</button>
+            <button type="button" class="chip-btn" data-prompt="Add 144 and 256">➕ Add 144 and 256</button>
+            <button type="button" class="chip-btn" data-prompt="Create project named Autonomous Sentinel">🚀 Orchestrate New Project</button>
+          </div>
+
+          <!-- Chat History -->
+          <div class="assistant-chat-history" id="host-chat-history">
+            <div class="chat-message assistant">
+              <div class="msg-bubble">
+                <p>👋 Hello! I am your <strong>MCP Host Client Assistant</strong>.</p>
+                <p>I have access to all 11 registered MCP tools. You can instruct me in natural language or click any of the suggestion chips above to see me invoke MCP tools dynamically.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat Input -->
+          <form class="assistant-chat-input-bar" id="host-chat-form">
+            <input 
+              type="text" 
+              id="host-chat-input" 
+              class="form-control" 
+              placeholder="Type an instruction (e.g., 'sync to airtable' or 'add 50 and 75')..." 
+              autocomplete="off" 
+              required 
+            />
+            <button type="submit" class="btn btn-primary" id="btn-host-chat-send">
+              <span>Send ➔</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Tab 3: JSON-RPC Protocol & Architecture -->
+      <div class="host-tab-content" id="host-tab-inspector" style="display: none;">
+        <div class="card host-info-card">
+          <div class="card-header">
+            <div class="header-title">
+              <span class="card-icon">📐</span>
+              <div>
+                <h3>Model Context Protocol (MCP) Architecture</h3>
+                <p>Understanding how MCP Server Mode and MCP Host Mode work together</p>
+              </div>
+            </div>
+          </div>
+          <div class="host-info-body">
+            <div class="info-comparison-grid">
+              <div class="comparison-card server-card">
+                <div class="comp-badge">🟢 MCP Server Mode</div>
+                <h4>Provider / Tool Exposer</h4>
+                <p>Exposes functions and data as standardized tools via the Model Context Protocol.</p>
+                <ul>
+                  <li><strong>Standard:</strong> <code>tools/list</code>, <code>tools/call</code></li>
+                  <li><strong>STDIO Mode:</strong> <code>python server.py --mcp</code> connects Cursor IDE or external MCP Host clients directly to your agents.</li>
+                  <li><strong>Web Mode:</strong> Provides web UI while exposing 10 agent tools in-memory.</li>
+                </ul>
+              </div>
+              <div class="comparison-card host-card">
+                <div class="comp-badge">🟣 MCP Host Mode</div>
+                <h4>Consumer / Tool Invoker</h4>
+                <p>Acts as the AI Application client that queries MCP servers, binds to tools, and executes them.</p>
+                <ul>
+                  <li><strong>Discovery:</strong> Dynamically loads tool manifests and parameters.</li>
+                  <li><strong>Execution:</strong> Encapsulates payloads into standard JSON-RPC 2.0 frames.</li>
+                  <li><strong>Autonomous:</strong> Chat assistant matches user intent directly to tool calls.</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="mcp-flow-diagram">
+              <h4>Protocol Interaction Flow</h4>
+              <pre class="flow-code">
++-------------------------------------------------------------------------------+
+|                             MCP HOST (Client)                                 |
+|  - Reads user intent or UI form inputs                                        |
+|  - Packages request: {"jsonrpc": "2.0", "method": "tools/call", ...}          |
++---------------------------------------+---------------------------------------+
+                                        |  HTTP POST / stdio stream
+                                        v
++-------------------------------------------------------------------------------+
+|                            MCP SERVER (Provider)                              |
+|  - Listens for RPC requests                                                   |
+|  - Dispatches to Agent 1 (Markdown), Agent 2 (Database), Agent 3 (Docs)       |
+|  - Returns formatted JSON-RPC result payload                                  |
++-------------------------------------------------------------------------------+
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal for Previewing File Content -->
+    <div class="modal-backdrop" id="preview-modal" style="display: none;">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h3 id="modal-title">File Preview</h3>
+          <button type="button" class="modal-close" id="btn-close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <pre><code id="modal-code">Loading...</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal for Confirmation (Archive / Permanent Delete) -->
+    <div class="modal-backdrop" id="confirm-modal" style="display: none;">
+      <div class="modal-dialog modal-dialog-sm">
+        <div class="modal-header">
+          <h3 id="confirm-title">Confirm Action</h3>
+          <button type="button" class="modal-close" id="btn-close-confirm">&times;</button>
+        </div>
+        <div class="modal-body-confirm">
+          <p id="confirm-message">Are you sure you want to proceed?</p>
+          <div class="confirm-actions">
+            <button type="button" class="btn btn-outline btn-sm" id="btn-confirm-cancel">Cancel</button>
+            <button type="button" class="btn btn-danger btn-sm" id="btn-confirm-proceed">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
